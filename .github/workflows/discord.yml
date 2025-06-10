@@ -1,23 +1,21 @@
 name: Deployment Notification to Discord
 
 on:
-  deployment_status:
+  push:
+    branches:
+      - main
 
 jobs:
   notify-discord:
     name: Notify Discord on Deployment Status
     runs-on: ubuntu-latest
-    if: (github.event.deployment_status.state == 'success' || github.event.deployment_status.state == 'failure') && github.ref == 'refs/heads/main'
 
     steps:
       - name: Notify Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          STATUS="${{ github.event.deployment_status.state }}"
-          ENVIRONMENT="${{ github.event.deployment.environment }}"
-          URL="${{ github.event.deployment_status.target_url }}"
-          MESSAGE="🚀 Deployment $STATUS 🚀\nENVIRONMENT: $ENVIRONMENT\nURL: $URL\n"
+          MESSAGE="🚀 Push to main branch 🚀\nCommit: ${{ github.event.head_commit.message }}\nAuthor: ${{ github.event.head_commit.author.name }}\nURL: ${{ github.event.head_commit.url }}\n"
           curl -H "Content-Type: application/json" \
                -d "{\"content\": \"$MESSAGE\"}" \
                $DISCORD_WEBHOOK_URL
